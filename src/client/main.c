@@ -1,13 +1,9 @@
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "../deps/edutils.h"
 
@@ -254,9 +250,7 @@ static int16_t write_data(FILE *f, struct tftp_gen gen, int genlen) {
                 memset(&data, 0, DATABUFLEN);
                 blocklen = genlen - 4;
                 data = to_data(&gen);
-                printf("Block %d of %d bytes received.\n", htons(data.blocknum), blocklen);
-
-                printf("[%s]\n", data.block);
+                DEBUG_PRINT(("Block %d of %d bytes received.\n", htons(data.blocknum), blocklen));
 
                 fwrite(data.block, sizeof(char), blocklen, f);
                 if (ferror(f)) {

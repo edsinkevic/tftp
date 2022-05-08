@@ -21,9 +21,6 @@ return __val;}) : __val); })
         };
 
 char *clean_token(char *s, const int slen, char (*predicate)(const char));
-char check_connection_status(int socket_fd);
 struct sockaddr_in get_address(char *ip_address, int port);
-void error();
-int print_client_address(struct sockaddr_in client_address);
 
 #endif
