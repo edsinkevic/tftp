@@ -242,37 +242,36 @@ static int send_ack(int s, struct sockaddr_in reply_addr, uint16_t blocknum) {
 }
 
 static int16_t write_data(FILE *f, struct tftp_gen gen, int genlen) {
-        if (htons(gen.op) == DATA) {
-                struct tftp_data data;
-                int blocklen;
-                int n;
+        if (htons(gen.op) != DATA)
+                return -1;
 
-                memset(&data, 0, DATABUFLEN);
-                blocklen = genlen - 4;
-                data = to_data(&gen);
-                DEBUG_PRINT(("Block %d of %d bytes received.\n", htons(data.blocknum), blocklen));
+        struct tftp_data data;
+        int blocklen;
+        int n;
 
-                fwrite(data.block, sizeof(char), blocklen, f);
-                if (ferror(f)) {
-                        printf("Error writing file");
-                        return -1;
-                }
+        memset(&data, 0, DATABUFLEN);
+        blocklen = genlen - 4;
+        data = to_data(&gen);
+        DEBUG_PRINT(("Block %d of %d bytes received.\n", htons(data.blocknum), blocklen));
 
-                return data.blocknum;
+        fwrite(data.block, sizeof(char), blocklen, f);
+        if (ferror(f)) {
+                printf("Error writing file");
+                return -1;
         }
 
-        return -1;
+        return data.blocknum;
 }
 
 static int handle_err(struct tftp_gen gen) {
-        if (htons(gen.op) == ERR) {
-                struct tftp_err err;
-                err = to_err(&gen);
-                printf("Error code: %d -- %s\n", htons(err.code), err.message);
-                return 1;
-        }
+        if (htons(gen.op) != ERR)
+                return 0;
 
-        return 0;
+        struct tftp_err err;
+
+        err = to_err(&gen);
+        printf("Error code: %d -- %s\n", htons(err.code), err.message);
+        return 1;
 }
 
 static char clean_pred(char c) {
