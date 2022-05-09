@@ -122,9 +122,7 @@ static int gen_command(int s, struct sockaddr_in saddr, char *fmode, int func(in
 
         CHECK_PRINT(func(s, f, saddr, clean_fname));
 
-        printf("Transfer complete.\n");
         fclose(f);
-
         free(clean_fname);
         return EXIT_SUCCESS;
 }
@@ -159,6 +157,7 @@ static int put(int s, FILE *f, struct sockaddr_in saddr, char *filename) {
         if (handle_err(gen))
                 return EXIT_FAILURE;
 
+        printf("Transfer complete.\n");
         return EXIT_SUCCESS;
 }
 
@@ -193,6 +192,7 @@ static int get(int s, FILE *f, struct sockaddr_in saddr, char *filename) {
                 CHECK_RETURN(send_ack(s, reply_addr, blocknum));
         } while (genlen == DATABUFLEN);
 
+        printf("Transfer complete.\n");
         return EXIT_SUCCESS;
 }
 
