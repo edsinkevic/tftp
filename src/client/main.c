@@ -8,7 +8,6 @@
 #include "../deps/edutils.h"
 
 #define DATABUFLEN 516
-#define ACKBUFLEN 4
 #define OPBUFLEN 100
 #define FILEBUFLEN 200
 #define PORT 69
@@ -56,6 +55,7 @@ static int put(int s, FILE *f, struct sockaddr_in saddr, char *filename);
 static int send_wrq(int s, struct sockaddr_in saddr, char *filename);
 static int get(int s, FILE *f, struct sockaddr_in saddr, char *filename);
 static char clean_pred(char c);
+static int send_rq(int s, struct sockaddr_in saddr, char *filename, char rq);
 static int send_rrq(int s, struct sockaddr_in saddr, char *filename);
 static int send_ack(int s, struct sockaddr_in reply_addr, uint16_t blocknum);
 static int send_data(int s, FILE *f, struct sockaddr_in reply_addr, uint16_t blocknum);
@@ -196,37 +196,31 @@ static int get(int s, FILE *f, struct sockaddr_in saddr, char *filename) {
         return EXIT_SUCCESS;
 }
 
-static int send_wrq(int s, struct sockaddr_in saddr, char *filename) {
+static int send_rq(int s, struct sockaddr_in saddr, char *filename, char rq) {
         int req_len;
         char message[DATABUFLEN];
         int filename_len;
 
         filename_len = strlen(filename);
         memset(message, 0, DATABUFLEN);
-        message[1] = WRQ;
+        message[1] = rq;
         strcpy(message + 2, filename);
         strcpy(message + 2 + filename_len + 1, MODE);
         req_len = 2 + strlen(filename) + 1 + strlen(MODE) + 1;
         CHECK_RETURN(sendto(s, message, req_len, 0, (struct sockaddr *)&saddr, sizeof(saddr)));
-        DEBUG_PRINT(("Sent WRQ.\n"));
 
         return 1;
 }
 
+static int send_wrq(int s, struct sockaddr_in saddr, char *filename) {
+        CHECK_RETURN(send_rq(s, saddr, filename, WRQ));
+        DEBUG_PRINT(("Sent WRQ.\n"));
+        return 1;
+}
+
 static int send_rrq(int s, struct sockaddr_in saddr, char *filename) {
-        int req_len;
-        char message[DATABUFLEN];
-        int filename_len;
-
-        filename_len = strlen(filename);
-        memset(message, 0, DATABUFLEN);
-        message[1] = RRQ;
-        strcpy(message + 2, filename);
-        strcpy(message + 2 + filename_len + 1, MODE);
-        req_len = 2 + strlen(filename) + 1 + strlen(MODE) + 1;
-        CHECK_RETURN(sendto(s, message, req_len, 0, (struct sockaddr *)&saddr, sizeof(saddr)));
+        CHECK_RETURN(send_rq(s, saddr, filename, RRQ));
         DEBUG_PRINT(("Sent RRQ.\n"));
-
         return 1;
 }
 
